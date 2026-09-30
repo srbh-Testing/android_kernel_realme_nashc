@@ -7847,6 +7847,24 @@ static ssize_t cpu_uclamp_write(struct kernfs_open_file *of, char *buf,
 	rcu_read_lock();
 
 	tg = css_tg(of_css(of));
+
+	/*
+	 * Limit only the Android "background" cgroup's UCLAMP_MAX
+	 * to 30.00%. Other cgroups and UCLAMP_MIN are unchanged.
+	 */
+	if (clamp_id == UCLAMP_MAX && tg->css.cgroup) {
+		char cgroup_name_buf[64];
+
+		cgroup_name(tg->css.cgroup, cgroup_name_buf,
+			    sizeof(cgroup_name_buf));
+
+		if (!strcmp(cgroup_name_buf, "background") &&
+		    req.percent > (30 * UCLAMP_PERCENT_SCALE / 100)) {
+			req.percent = 30 * UCLAMP_PERCENT_SCALE / 100;
+			req.util = scale_from_percent(30);
+		}
+	}
+
 	if (tg->uclamp_req[clamp_id].value != req.util)
 		uclamp_se_set(&tg->uclamp_req[clamp_id], req.util, false);
 
