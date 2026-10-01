@@ -751,9 +751,23 @@ static ssize_t up_rate_limit_us_store(struct gov_attr_set *attr_set,
 	struct sugov_tunables *tunables = to_sugov_tunables(attr_set);
 	struct sugov_policy *sg_policy;
 	unsigned int rate_limit_us;
+	unsigned int floor_us = 0;
 
 	if (kstrtouint(buf, 10, &rate_limit_us))
 		return -EINVAL;
+
+	/*
+	 * Keep a minimum up rate limit on the little (cpu0) and big (cpu6)
+	 * clusters, so a ROM writing a smaller value cannot undercut it.
+	 */
+	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook) {
+		if (sg_policy->policy->cpu == 0)
+			floor_us = 800;
+		else if (sg_policy->policy->cpu == 6)
+			floor_us = 1300;
+	}
+	if (rate_limit_us < floor_us)
+		rate_limit_us = floor_us;
 
 	tunables->up_rate_limit_us = rate_limit_us;
 
