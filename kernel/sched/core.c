@@ -7652,6 +7652,25 @@ static int cpu_cgroup_css_online(struct cgroup_subsys_state *css)
 		sched_online_group(tg, parent);
 
 #if defined(CONFIG_UCLAMP_TASK_GROUP) && !defined(CONFIG_SCHED_TUNE)
+	/*
+	 * Default the Android "background" group to a 30.00% UCLAMP_MAX when
+	 * it is created, so the cap holds even if the ROM never writes it.
+	 * (cpu_uclamp_write() still clamps later writes to 30.00%.)
+	 */
+	if (parent && css->cgroup) {
+		char cgroup_name_buf[64];
+
+		cgroup_name(css->cgroup, cgroup_name_buf,
+			    sizeof(cgroup_name_buf));
+
+		if (!strcmp(cgroup_name_buf, "background")) {
+			uclamp_se_set(&tg->uclamp_req[UCLAMP_MAX],
+				      DIV_ROUND_CLOSEST(30 * SCHED_CAPACITY_SCALE, 100),
+				      false);
+			tg->uclamp_pct[UCLAMP_MAX] = 30 * UCLAMP_PERCENT_SCALE / 100;
+		}
+	}
+
 	/* Propagate the effective uclamp value for the new group */
 	mutex_lock(&uclamp_mutex);
 	rcu_read_lock();
