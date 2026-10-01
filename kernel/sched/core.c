@@ -7880,6 +7880,23 @@ static ssize_t cpu_uclamp_write(struct kernfs_open_file *of, char *buf,
 	tg = css_tg(of_css(of));
 
 	/*
+	 * HAL touch boost writes ~45% UCLAMP_MIN to top-app; cap that
+	 * range to 30%. Launch boost (100%) is left unchanged.
+	 */
+	if (clamp_id == UCLAMP_MIN && tg->css.cgroup) {
+		char cg_buf[64];
+
+		cgroup_name(tg->css.cgroup, cg_buf, sizeof(cg_buf));
+
+		if (!strcmp(cg_buf, "top-app") &&
+		    req.percent > (30 * UCLAMP_PERCENT_SCALE / 100) &&
+		    req.percent <= (50 * UCLAMP_PERCENT_SCALE / 100)) {
+			req.percent = 30 * UCLAMP_PERCENT_SCALE / 100;
+			req.util = scale_from_percent(30);
+		}
+	}
+
+	/*
 	 * Limit only the Android "background" cgroup's UCLAMP_MAX
 	 * to 30.00%. Other cgroups and UCLAMP_MIN are unchanged.
 	 */
