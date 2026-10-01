@@ -7643,6 +7643,10 @@ cpu_cgroup_css_alloc(struct cgroup_subsys_state *parent_css)
 }
 
 /* Expose task group only after completing cgroup initialization */
+#if defined(CONFIG_UCLAMP_TASK_GROUP) && !defined(CONFIG_SCHED_TUNE)
+static unsigned int uclamp_background_cap_pct(void);
+#endif
+
 static int cpu_cgroup_css_online(struct cgroup_subsys_state *css)
 {
 	struct task_group *tg = css_tg(css);
@@ -7667,7 +7671,7 @@ static int cpu_cgroup_css_online(struct cgroup_subsys_state *css)
 			uclamp_se_set(&tg->uclamp_req[UCLAMP_MAX],
 				      DIV_ROUND_CLOSEST(30 * SCHED_CAPACITY_SCALE, 100),
 				      false);
-			tg->uclamp_pct[UCLAMP_MAX] = 30 * UCLAMP_PERCENT_SCALE / 100;
+			tg->uclamp_pct[UCLAMP_MAX] = uclamp_background_cap_pct();
 		}
 	}
 
@@ -7848,6 +7852,14 @@ capacity_from_percent(char *buf)
 
 	return req;
 }
+
+#if defined(CONFIG_UCLAMP_TASK_GROUP) && !defined(CONFIG_SCHED_TUNE)
+/* Defined here: UCLAMP_PERCENT_SCALE is only visible from this point. */
+static unsigned int uclamp_background_cap_pct(void)
+{
+	return 30 * UCLAMP_PERCENT_SCALE / 100;
+}
+#endif
 
 static ssize_t cpu_uclamp_write(struct kernfs_open_file *of, char *buf,
 				size_t nbytes, loff_t off,
