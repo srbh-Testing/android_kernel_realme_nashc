@@ -174,7 +174,7 @@ static inline unsigned long map_util_freq_with_margin(
 					unsigned long cap)
 {
 	freq = freq * util / cap;
-	freq = freq / SCHED_CAPACITY_SCALE * 1152; /* 1.125x headroom, freq selection only */
+	freq = freq / SCHED_CAPACITY_SCALE * capacity_margin;
 	return freq;
 }
 #endif
