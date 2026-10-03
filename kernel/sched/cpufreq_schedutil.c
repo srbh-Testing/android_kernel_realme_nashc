@@ -762,9 +762,9 @@ static ssize_t up_rate_limit_us_store(struct gov_attr_set *attr_set,
 	 */
 	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook) {
 		if (sg_policy->policy->cpu == 0)
-			floor_us = 800;
+			floor_us = 650;
 		else if (sg_policy->policy->cpu == 6)
-			floor_us = 1300;
+			floor_us = 1150;
 	}
 	if (rate_limit_us < floor_us)
 		rate_limit_us = floor_us;
@@ -1049,9 +1049,9 @@ static int sugov_init(struct cpufreq_policy *policy)
 	}
 
 	if (policy->cpu == 0)
-		tunables->up_rate_limit_us = 800;
+		tunables->up_rate_limit_us = 650;
 	else if (policy->cpu == 6)
-		tunables->up_rate_limit_us = 1300;
+		tunables->up_rate_limit_us = 1150;
 	else
 		tunables->up_rate_limit_us =
 			cpufreq_policy_transition_delay_us(policy);
