@@ -204,13 +204,13 @@ static int mt_ppm_userlimit_set_min_freq(struct ppm_user_limit *limit, int min_f
 		idx = limit->max_freq_idx;
 
 	/*
-	 * Lighten the HAL touch-boost floor: little 1275000 -> 975000,
-	 * big 1419000 -> 1085000. Other floors (launch, audio) unchanged.
+	 * Lighten the HAL touch-boost floor: little 1275000 -> 1075000,
+	 * big 1419000 -> 1169000. Other floors (launch, audio) unchanged.
 	 */
 	if (id == 0 && idx == 9)
-		idx = 12;
-	else if (id == 1 && idx == 8)
 		idx = 11;
+	else if (id == 1 && idx == 8)
+		idx = 10;
 
 	if (idx != limit->min_freq_idx) {
 		limit->min_freq_idx = idx;
