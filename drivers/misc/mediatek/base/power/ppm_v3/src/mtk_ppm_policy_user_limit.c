@@ -211,6 +211,11 @@ static int mt_ppm_userlimit_set_min_freq(struct ppm_user_limit *limit, int min_f
 		idx = 11;
 	else if (id == 1 && idx == 8)
 		idx = 10;
+	/* Launch floor: little 2000000 -> 1500000, big 2050000 -> 1530000 */
+	else if (id == 0 && idx == 0)
+		idx = 7;
+	else if (id == 1 && idx == 0)
+		idx = 7;
 
 	if (idx != limit->min_freq_idx) {
 		limit->min_freq_idx = idx;
