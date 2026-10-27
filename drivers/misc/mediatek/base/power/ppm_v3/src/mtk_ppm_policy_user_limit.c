@@ -137,10 +137,6 @@ unsigned int mt_ppm_userlimit_cpu_freq(
 				: ppm_main_freq_to_idx(i, max_freq,
 				CPUFREQ_RELATION_H);
 
-		/* Cap kernel-driver min floors (WiFi/modem boost): idx 7 = 1500000/1530000 */
-		if (min_freq_idx != -1 && min_freq_idx < 7)
-			min_freq_idx = 7;
-
 		/* sync to max_freq if min < max */
 		if (min_freq_idx != -1 && max_freq_idx != -1
 			&& min_freq_idx < max_freq_idx)
