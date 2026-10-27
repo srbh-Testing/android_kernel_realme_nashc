@@ -67,7 +67,7 @@ int32_t kalBoostCpu(IN struct ADAPTER *prAdapter,
 	/* ACAO, we dont have to set core number */
 	i4Freq = (u4TarPerfLevel >= u4BoostCpuTh) ? MAX_CPU_FREQ : -1;
 	for (i = 0; i < u4ClusterNum; i++) {
-		freq_to_set[i].min = i4Freq;
+		freq_to_set[i].min = (i4Freq == -1) ? -1 : 1500000; /* cap WiFi boost floor */
 		freq_to_set[i].max = i4Freq;
 	}
 
