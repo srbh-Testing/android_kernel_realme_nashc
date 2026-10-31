@@ -370,6 +370,10 @@ unsigned int mt_gpufreq_target(unsigned int request_idx, bool is_real_idx)
 		}
 	}
 
+	/* Cap GPU max OPP at idx 11 (854000 KHz) */
+	if (target_idx < 11)
+		target_idx = 11;
+
 	/* If /proc/gpufreq/gpufreq_opp_freq fix OPP freq */
 	if (g_keep_opp_freq_state) {
 		gpufreq_pr_debug(
