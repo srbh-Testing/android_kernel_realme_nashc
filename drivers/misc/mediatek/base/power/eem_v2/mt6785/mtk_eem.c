@@ -3811,6 +3811,15 @@ static int eem_probe(struct platform_device *pdev)
 		eem_dconfig_set_det(det, node);
 #endif
 
+	/* Sweet-spot undervolt: -31.25mV (-5) for CPU/CCI, -12.5mV (-2) for GPU */
+	for_each_det(det) {
+		if (det->ctrl_id == EEM_CTRL_L ||
+		    det->ctrl_id == EEM_CTRL_B ||
+		    det->ctrl_id == EEM_CTRL_CCI)
+			det->volt_offset = -5;
+		else if (det->ctrl_id == EEM_CTRL_GPU)
+			det->volt_offset = -2;
+	}
 
 	eem_init01();
 
