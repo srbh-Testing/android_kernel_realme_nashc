@@ -116,16 +116,16 @@ static bool sugov_should_update_freq(struct sugov_policy *sg_policy, u64 time)
 	return delta_ns >= sg_policy->min_rate_limit_ns;
 }
 
-/* Fixed up/down delays: little (cpu0) 650us/15ms, big (cpu6) 1150us/10ms. */
+/* Fixed up/down delays: little (cpu0) 2000us/4000us, big (cpu6) 3000us/3000us. */
 static inline s64 sugov_fixed_delay_ns(struct sugov_policy *sg_policy,
 				       bool up, s64 def_ns)
 {
 	int cpu = sg_policy->policy->cpu;
 
 	if (cpu == 0)
-		return (up ? 650 : 15000) * NSEC_PER_USEC;
+		return (up ? 2000 : 4000) * NSEC_PER_USEC;
 	if (cpu == 6)
-		return (up ? 1150 : 10000) * NSEC_PER_USEC;
+		return (up ? 3000 : 3000) * NSEC_PER_USEC;
 	return def_ns;
 }
 
@@ -775,9 +775,9 @@ static ssize_t up_rate_limit_us_store(struct gov_attr_set *attr_set,
 	 */
 	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook) {
 		if (sg_policy->policy->cpu == 0)
-			floor_us = 650;
+			floor_us = 2000;
 		else if (sg_policy->policy->cpu == 6)
-			floor_us = 1150;
+			floor_us = 3000;
 	}
 	if (floor_us)
 		rate_limit_us = floor_us;
@@ -806,9 +806,9 @@ static ssize_t down_rate_limit_us_store(struct gov_attr_set *attr_set,
 	/* Fixed down rate limit: little 15 ms, big 10 ms (ROM writes ignored). */
 	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook) {
 		if (sg_policy->policy->cpu == 0)
-			fixed_us = 15000;
+			fixed_us = 4000;
 		else if (sg_policy->policy->cpu == 6)
-			fixed_us = 10000;
+			fixed_us = 3000;
 	}
 	if (fixed_us)
 		rate_limit_us = fixed_us;
@@ -872,9 +872,9 @@ int schedutil_set_down_rate_limit_us(int cpu, unsigned int rate_limit_us)
 	}
 
 	if (policy->cpu == 0)
-		rate_limit_us = 15000;
+		rate_limit_us = 4000;
 	else if (policy->cpu == 6)
-		rate_limit_us = 10000;
+		rate_limit_us = 3000;
 
 	tunables = sg_policy->tunables;
 	tunables->down_rate_limit_us = rate_limit_us;
@@ -917,9 +917,9 @@ int schedutil_set_up_rate_limit_us(int cpu, unsigned int rate_limit_us)
 	}
 
 	if (policy->cpu == 0)
-		rate_limit_us = 650;
+		rate_limit_us = 2000;
 	else if (policy->cpu == 6)
-		rate_limit_us = 1150;
+		rate_limit_us = 3000;
 
 	tunables = sg_policy->tunables;
 	tunables->up_rate_limit_us = rate_limit_us;
@@ -1083,17 +1083,17 @@ static int sugov_init(struct cpufreq_policy *policy)
 	}
 
 	if (policy->cpu == 0)
-		tunables->up_rate_limit_us = 650;
+		tunables->up_rate_limit_us = 2000;
 	else if (policy->cpu == 6)
-		tunables->up_rate_limit_us = 1150;
+		tunables->up_rate_limit_us = 3000;
 	else
 		tunables->up_rate_limit_us =
 			cpufreq_policy_transition_delay_us(policy);
 
 	if (policy->cpu == 0)
-		tunables->down_rate_limit_us = 15000;
+		tunables->down_rate_limit_us = 4000;
 	else if (policy->cpu == 6)
-		tunables->down_rate_limit_us = 10000;
+		tunables->down_rate_limit_us = 3000;
 	else
 		tunables->down_rate_limit_us =
 			cpufreq_policy_transition_delay_us(policy);

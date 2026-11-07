@@ -7883,11 +7883,15 @@ static ssize_t cpu_uclamp_write(struct kernfs_open_file *of, char *buf,
 	 * Cap UCLAMP_MIN written in the 35-50% range to 35% for any cgroup
 	 * (HAL touch boost writes ~45%). Launch boost (100%) is unchanged.
 	 */
-	if (clamp_id == UCLAMP_MIN &&
-	    req.percent > (35 * UCLAMP_PERCENT_SCALE / 100) &&
-	    req.percent <= (50 * UCLAMP_PERCENT_SCALE / 100)) {
-		req.percent = 35 * UCLAMP_PERCENT_SCALE / 100;
-		req.util = scale_from_percent(35);
+	if (clamp_id == UCLAMP_MIN) {
+		if (req.percent > (35 * UCLAMP_PERCENT_SCALE / 100) &&
+		    req.percent <= (50 * UCLAMP_PERCENT_SCALE / 100)) {
+			req.percent = 35 * UCLAMP_PERCENT_SCALE / 100;
+			req.util = scale_from_percent(35);
+		} else if (req.percent > (60 * UCLAMP_PERCENT_SCALE / 100)) {
+			req.percent = 60 * UCLAMP_PERCENT_SCALE / 100;
+			req.util = scale_from_percent(60);
+		}
 	}
 
 	/*

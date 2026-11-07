@@ -137,6 +137,19 @@ unsigned int mt_ppm_userlimit_cpu_freq(
 				: ppm_main_freq_to_idx(i, max_freq,
 				CPUFREQ_RELATION_H);
 
+		/* Cap min floor in bulk userlimit_cpu_freq path too */
+		if (i == 0 && min_freq_idx == 9)
+			min_freq_idx = 11;
+		else if (i == 1 && min_freq_idx == 8)
+			min_freq_idx = 10;
+		else if (min_freq_idx != -1 && min_freq_idx < 8)
+			min_freq_idx = 8;
+
+		/* Global max cap: idx 3 (little 1800000, big 1860000) */
+		if (max_freq_idx == -1 || max_freq_idx < 3)
+			max_freq_idx = 3;
+		is_limit = true;
+
 		/* sync to max_freq if min < max */
 		if (min_freq_idx != -1 && max_freq_idx != -1
 			&& min_freq_idx < max_freq_idx)
@@ -197,25 +210,27 @@ static int mt_ppm_userlimit_set_min_freq(struct ppm_user_limit *limit, int min_f
 		: ppm_main_freq_to_idx(id, min_freq,
 		CPUFREQ_RELATION_L);
 
-	/* error check, sync to max idx if min freq > max freq */
-	if (limit->max_freq_idx != -1
-		&& idx != -1
-		&& idx < limit->max_freq_idx)
-		idx = limit->max_freq_idx;
-
 	/*
 	 * Lighten the HAL touch-boost floor: little 1275000 -> 1075000,
-	 * big 1419000 -> 1169000. Other floors (launch, audio) unchanged.
+	 * big 1419000 -> 1169000.
 	 */
 	if (id == 0 && idx == 9)
 		idx = 11;
 	else if (id == 1 && idx == 8)
 		idx = 10;
-	/* Launch floor: little 2000000 -> 1500000, big 2050000 -> 1530000 */
-	else if (id == 0 && idx == 0)
-		idx = 7;
-	else if (id == 1 && idx == 0)
-		idx = 7;
+	/* Launch floor: little 2000000 -> 1375000, big 2050000 -> 1419000 */
+	else if (id == 0 && idx >= 0 && idx < 8)
+		idx = 8;
+	else if (id == 1 && idx >= 0 && idx < 8)
+		idx = 8;
+
+	/* Ensure max_freq_idx is always capped at >= 3 */
+	if (limit->max_freq_idx == -1 || limit->max_freq_idx < 3)
+		limit->max_freq_idx = 3;
+
+	/* error check, sync to max idx if min freq > max freq */
+	if (idx != -1 && idx < limit->max_freq_idx)
+		idx = limit->max_freq_idx;
 
 	if (idx != limit->min_freq_idx) {
 		limit->min_freq_idx = idx;
@@ -226,8 +241,8 @@ static int mt_ppm_userlimit_set_min_freq(struct ppm_user_limit *limit, int min_f
 
 	/* check is freq limited or not */
 	for (i = 0; i < userlimit_policy.req.cluster_num; i++) {
-		if (limit[i].min_freq_idx != -1
-		|| limit[i].max_freq_idx != -1) {
+		if (userlimit_data.limit[i].min_freq_idx != -1
+		|| userlimit_data.limit[i].max_freq_idx != -1) {
 			is_limit = true;
 			break;
 		}
@@ -267,6 +282,10 @@ static int mt_ppm_userlimit_set_max_freq(struct ppm_user_limit *limit, int max_f
 		: ppm_main_freq_to_idx(id, max_freq,
 		CPUFREQ_RELATION_H);
 
+	/* Global max cap: idx 3 */
+	if (idx == -1 || idx < 3)
+		idx = 3;
+
 	/* error check, sync to max idx if max freq < min freq */
 	if (limit->min_freq_idx != -1
 		&& idx != -1
@@ -282,8 +301,8 @@ static int mt_ppm_userlimit_set_max_freq(struct ppm_user_limit *limit, int max_f
 
 	/* check is freq limited or not */
 	for (i = 0; i < userlimit_policy.req.cluster_num; i++) {
-		if (limit->min_freq_idx != -1
-		|| limit->max_freq_idx != -1) {
+		if (userlimit_data.limit[i].min_freq_idx != -1
+		|| userlimit_data.limit[i].max_freq_idx != -1) {
 			is_limit = true;
 			break;
 		}
@@ -564,11 +583,13 @@ static int __init ppm_userlimit_policy_init(void)
 	/* init userlimit_data */
 	for_each_ppm_clusters(i) {
 		userlimit_data.limit[i].min_freq_idx = -1;
-		userlimit_data.limit[i].max_freq_idx = -1;
+		userlimit_data.limit[i].max_freq_idx = 3; /* global max cap */
 		userlimit_data.limit[i].min_core_num = -1;
 		userlimit_data.limit[i].max_core_num = -1;
 		userlimit_data.limit[i].cluster_id = i;
 	}
+	userlimit_data.is_freq_limited_by_user = true;
+	userlimit_policy.is_activated = true;
 
 	/* create procfs for each cluster */
 	for_each_ppm_clusters(i) {
