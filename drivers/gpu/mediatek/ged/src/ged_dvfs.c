@@ -44,7 +44,7 @@
  *  Current using vsync that would be 16ms as period,
  *  below boost at (32, 48] seconds per boost
  */
-#define GED_DVFS_SKIP_ROUNDS 3
+#define GED_DVFS_SKIP_ROUNDS 1
 
 #ifdef GED_ENABLE_FB_DVFS
 spinlock_t gsGpuUtilLock;
@@ -185,7 +185,7 @@ struct GpuUtilization_Ex g_Util_Ex;
 static int ged_get_dvfs_loading_mode(void);
 #endif
 
-#define GED_DVFS_TIMER_BASED_DVFS_MARGIN 30
+#define GED_DVFS_TIMER_BASED_DVFS_MARGIN 15
 static int gx_tb_dvfs_margin = GED_DVFS_TIMER_BASED_DVFS_MARGIN;
 static int gx_tb_dvfs_margin_cur = GED_DVFS_TIMER_BASED_DVFS_MARGIN;
 #ifdef GED_ENABLE_TIMER_BASED_DVFS_MARGIN
