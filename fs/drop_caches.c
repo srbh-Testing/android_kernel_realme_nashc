@@ -9,6 +9,8 @@
 #include <linux/writeback.h>
 #include <linux/sysctl.h>
 #include <linux/gfp.h>
+#include <linux/init.h>
+#include <linux/workqueue.h>
 #include "internal.h"
 
 /* A global variable is a bit ugly, but it keeps the code simple */
@@ -74,3 +76,18 @@ int drop_caches_sysctl_handler(struct ctl_table *table, int write,
 	}
 	return 0;
 }
+
+static void auto_boot_drop_caches_fn(struct work_struct *work)
+{
+	iterate_supers(drop_pagecache_sb, NULL);
+	drop_slab();
+}
+
+static DECLARE_DELAYED_WORK(auto_boot_drop_caches_work, auto_boot_drop_caches_fn);
+
+static int __init auto_boot_drop_caches_init(void)
+{
+	schedule_delayed_work(&auto_boot_drop_caches_work, 60 * HZ);
+	return 0;
+}
+late_initcall(auto_boot_drop_caches_init);
