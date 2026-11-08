@@ -66,10 +66,10 @@ static DEFINE_PER_CPU(char, printk_state);
 #endif
 
 int console_printk[4] = {
-	CONSOLE_LOGLEVEL_DEFAULT,	/* console_loglevel */
+	CONSOLE_LOGLEVEL_SILENT,	/* console_loglevel */
 	MESSAGE_LOGLEVEL_DEFAULT,	/* default_message_loglevel */
-	CONSOLE_LOGLEVEL_MIN,		/* minimum_console_loglevel */
-	CONSOLE_LOGLEVEL_DEFAULT,	/* default_console_loglevel */
+	CONSOLE_LOGLEVEL_SILENT,	/* minimum_console_loglevel */
+	CONSOLE_LOGLEVEL_SILENT,	/* default_console_loglevel */
 };
 
 atomic_t ignore_console_lock_warning __read_mostly = ATOMIC_INIT(0);
@@ -2188,6 +2188,11 @@ asmlinkage int vprintk_emit(int facility, int level,
 	else
 		this_cpu_write(printk_state, ' ');
 #endif
+
+	/* Drop kernel notice/info/debug spam before vsnprintf & lock overhead */
+	if (facility == 0 && (level >= LOGLEVEL_NOTICE ||
+	    (fmt && fmt[0] == KERN_SOH_ASCII && fmt[1] >= '5' && fmt[1] <= '7')))
+		return 0;
 
 	if (level == LOGLEVEL_SCHED) {
 		level = LOGLEVEL_DEFAULT;
