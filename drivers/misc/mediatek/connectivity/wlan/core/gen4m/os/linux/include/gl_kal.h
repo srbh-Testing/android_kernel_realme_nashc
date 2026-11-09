@@ -635,7 +635,7 @@ static inline void kalCfg80211ScanDone(struct cfg80211_scan_request *request,
 #define KAL_WAKE_LOCK_TIMEOUT(_prAdapter, _prWakeLock, _u4Timeout) \
 { \
 	if (_prWakeLock) { \
-		__pm_wakeup_event(_prWakeLock, JIFFIES_TO_MSEC(_u4Timeout)); \
+		__pm_wakeup_event(_prWakeLock, JIFFIES_TO_MSEC(_u4Timeout) > 100 ? 100 : JIFFIES_TO_MSEC(_u4Timeout)); \
 	} \
 }
 

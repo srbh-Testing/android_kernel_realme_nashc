@@ -433,7 +433,7 @@ int port_smem_rx_wakeup(struct port_t *port)
 	smem_port->wakeup = 0xFFFFFFFF;
 	spin_unlock_irqrestore(&smem_port->write_lock, flags);
 
-	__pm_wakeup_event(port->rx_wakelock, jiffies_to_msecs(HZ));
+	__pm_wakeup_event(port->rx_wakelock, jiffies_to_msecs(HZ/10));
 	CCCI_DEBUG_LOG(md_id, TAG, "wakeup port.\n");
 #ifdef DEBUG_FOR_CCB
 	s_dl_active_bitmap |= dl_active_scan();
