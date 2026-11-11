@@ -692,10 +692,18 @@ static int enter_state(suspend_state_t state)
  */
 int pm_suspend(suspend_state_t state)
 {
+	static unsigned long next_slab_trim_jiffies;
 	int error;
 
 	if (state <= PM_SUSPEND_ON || state >= PM_SUSPEND_MAX)
 		return -EINVAL;
+
+	if (unlikely(!next_slab_trim_jiffies)) {
+		next_slab_trim_jiffies = jiffies + (6UL * 3600UL * HZ);
+	} else if (unlikely(time_after(jiffies, next_slab_trim_jiffies))) {
+		drop_slab();
+		next_slab_trim_jiffies = jiffies + (6UL * 3600UL * HZ);
+	}
 
 	pr_info("suspend entry (%s)\n", mem_sleep_labels[state]);
 	error = enter_state(state);
