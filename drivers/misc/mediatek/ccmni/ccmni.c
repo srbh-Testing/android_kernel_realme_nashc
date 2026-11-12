@@ -1524,7 +1524,7 @@ static int ccmni_rx_callback(int md_id, int ccmni_idx, struct sk_buff *skb,
 	}
 #endif
 
-	__pm_wakeup_event(ctlb->ccmni_wakelock, jiffies_to_msecs(HZ/4));
+	__pm_wakeup_event(ctlb->ccmni_wakelock, jiffies_to_msecs(HZ/2));
 
 	return 0;
 }
@@ -1569,7 +1569,7 @@ static void ccmni_queue_state_callback(int md_id, int ccmni_idx,
 	case RX_IRQ:
 		mod_timer(ccmni->timer, jiffies + HZ);
 		napi_schedule(ccmni->napi);
-		__pm_wakeup_event(ctlb->ccmni_wakelock, jiffies_to_msecs(HZ/4));
+		__pm_wakeup_event(ctlb->ccmni_wakelock, jiffies_to_msecs(HZ/2));
 		break;
 #endif
 

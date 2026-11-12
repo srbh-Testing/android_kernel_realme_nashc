@@ -9,8 +9,6 @@
 #include <linux/writeback.h>
 #include <linux/sysctl.h>
 #include <linux/gfp.h>
-#include <linux/init.h>
-#include <linux/workqueue.h>
 #include "internal.h"
 
 /* A global variable is a bit ugly, but it keeps the code simple */
