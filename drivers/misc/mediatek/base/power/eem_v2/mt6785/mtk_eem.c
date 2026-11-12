@@ -3811,15 +3811,15 @@ static int eem_probe(struct platform_device *pdev)
 		eem_dconfig_set_det(det, node);
 #endif
 
-	/* Extreme UV: -50mV (-8) L/CCI, -43.75mV (-7) Big, -25mV (-4) GPU */
+	/* Aggressive UV: -43.75mV (-7) L/CCI, -37.5mV (-6) Big, -18.75mV (-3) GPU */
 	for_each_det(det) {
 		if (det->ctrl_id == EEM_CTRL_L ||
 		    det->ctrl_id == EEM_CTRL_CCI)
-			det->volt_offset = -8;
-		else if (det->ctrl_id == EEM_CTRL_B)
 			det->volt_offset = -7;
+		else if (det->ctrl_id == EEM_CTRL_B)
+			det->volt_offset = -6;
 		else if (det->ctrl_id == EEM_CTRL_GPU)
-			det->volt_offset = -4;
+			det->volt_offset = -3;
 	}
 
 	eem_init01();
