@@ -7644,6 +7644,13 @@ cpu_cgroup_css_alloc(struct cgroup_subsys_state *parent_css)
 
 /* Expose task group only after completing cgroup initialization */
 #if defined(CONFIG_UCLAMP_TASK_GROUP) && !defined(CONFIG_SCHED_TUNE)
+/*
+ * Single source of truth for the Android "background" cgroup's UCLAMP_MAX
+ * cap. uclamp_background_cap_pct(), cpu_cgroup_css_online() and
+ * cpu_uclamp_write() all derive from this one constant so the default,
+ * the write-time clamp and the reported percentage can never drift apart.
+ */
+#define UCLAMP_BACKGROUND_CAP_PCT	30u
 static unsigned int uclamp_background_cap_pct(void);
 #endif
 
@@ -7669,7 +7676,7 @@ static int cpu_cgroup_css_online(struct cgroup_subsys_state *css)
 
 		if (!strcmp(cgroup_name_buf, "background")) {
 			uclamp_se_set(&tg->uclamp_req[UCLAMP_MAX],
-				      DIV_ROUND_CLOSEST(30 * SCHED_CAPACITY_SCALE, 100),
+				      scale_from_percent(UCLAMP_BACKGROUND_CAP_PCT),
 				      false);
 			tg->uclamp_pct[UCLAMP_MAX] = uclamp_background_cap_pct();
 		}
@@ -7857,7 +7864,7 @@ capacity_from_percent(char *buf)
 /* Defined here: UCLAMP_PERCENT_SCALE is only visible from this point. */
 static unsigned int uclamp_background_cap_pct(void)
 {
-	return 30 * UCLAMP_PERCENT_SCALE / 100;
+	return UCLAMP_BACKGROUND_CAP_PCT * UCLAMP_PERCENT_SCALE / 100;
 }
 #endif
 
@@ -7905,9 +7912,9 @@ static ssize_t cpu_uclamp_write(struct kernfs_open_file *of, char *buf,
 			    sizeof(cgroup_name_buf));
 
 		if (!strcmp(cgroup_name_buf, "background") &&
-		    req.percent > (30 * UCLAMP_PERCENT_SCALE / 100)) {
-			req.percent = 30 * UCLAMP_PERCENT_SCALE / 100;
-			req.util = scale_from_percent(30);
+		    req.percent > (UCLAMP_BACKGROUND_CAP_PCT * UCLAMP_PERCENT_SCALE / 100)) {
+			req.percent = UCLAMP_BACKGROUND_CAP_PCT * UCLAMP_PERCENT_SCALE / 100;
+			req.util = scale_from_percent(UCLAMP_BACKGROUND_CAP_PCT);
 		}
 	}
 

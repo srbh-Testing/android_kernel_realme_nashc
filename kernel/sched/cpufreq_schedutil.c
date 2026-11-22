@@ -803,7 +803,7 @@ static ssize_t down_rate_limit_us_store(struct gov_attr_set *attr_set,
 	if (kstrtouint(buf, 10, &rate_limit_us))
 		return -EINVAL;
 
-	/* Fixed down rate limit: little 15 ms, big 10 ms (ROM writes ignored). */
+	/* Fixed down rate limit: little 4 ms, big 3 ms (ROM writes ignored). */
 	list_for_each_entry(sg_policy, &attr_set->policy_list, tunables_hook) {
 		if (sg_policy->policy->cpu == 0)
 			fixed_us = 4000;
