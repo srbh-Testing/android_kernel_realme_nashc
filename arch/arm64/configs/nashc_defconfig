@@ -433,6 +433,15 @@ CONFIG_FRAME_WARN=3200
 CONFIG_PANIC_ON_OOPS=y
 CONFIG_PANIC_TIMEOUT=1
 CONFIG_SCHEDSTATS=n
+# Pressure Stall Information: lets userspace lmkd (modern Android's low
+# memory killer daemon) react to real memory/CPU/IO pressure instead of
+# polling /proc/meminfo, which is fewer wakeups and faster, less wasteful
+# app-kill decisions. The hooks (psi_memstall_enter/leave in mm/vmscan.c,
+# CONFIG_PSI branches in kernel/sched/stats.h) are already compiled into
+# this kernel; this only turns them on. Upstream documents the added
+# scheduler overhead as too small to matter outside artificial stress
+# tests (Documentation/accounting/psi.txt).
+CONFIG_PSI=y
 # CONFIG_DEBUG_PREEMPT is not set
 # CONFIG_DEBUG_BUGVERBOSE is not set
 CONFIG_RCU_CPU_STALL_TIMEOUT=60
