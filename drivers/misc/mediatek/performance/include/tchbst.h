@@ -23,7 +23,15 @@
 
 /*tchbst 100 ms*/
 #define TOUCH_TIMEOUT_NSEC 100000000
-#define TOUCH_BOOST_EAS 80
+/*
+ * Lowered from the stock 80 to trim the uclamp-min floor applied on every
+ * touch (less CPU ramp / heat / battery drain per tap). Left well above the
+ * 30% background cap so foreground UI work still gets clear priority.
+ * TOUCH_BOOST_OPP intentionally left untouched: it indexes the raw OPP
+ * frequency table, and changing it without that table in front of you risks
+ * picking a floor frequency that causes visible touch lag.
+ */
+#define TOUCH_BOOST_EAS 65
 #define TOUCH_BOOST_OPP 2
 #define TOUCH_FSTB_ACTIVE_US 100000
 #define TOUCH_TIME_TO_LAST_TOUCH_MS 600000
