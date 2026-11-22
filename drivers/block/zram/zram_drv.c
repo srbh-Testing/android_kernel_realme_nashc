@@ -41,7 +41,16 @@ static DEFINE_IDR(zram_index_idr);
 static DEFINE_MUTEX(zram_index_mutex);
 
 static int zram_major;
-static const char *default_compressor = "lzo";
+/*
+ * lz4 instead of the historical lzo default: same CRYPTO_LZ4 module is
+ * already force-enabled for ZRAM by drivers/misc/mediatek/Kconfig.default,
+ * and lz4 decompresses noticeably faster than lzo for a similar ratio --
+ * less CPU time (battery) per zram page-in, which happens on every swapped
+ * page fault under memory pressure. If this ROM's init/fstab already sets
+ * /sys/block/zram0/comp_algorithm explicitly at boot, that write simply
+ * overrides this default again, so this change is harmless either way.
+ */
+static const char *default_compressor = "lz4";
 
 /* Module params (documentation at end) */
 static unsigned int num_devices = 1;
