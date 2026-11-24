@@ -141,7 +141,7 @@ unsigned int mt_ppm_userlimit_cpu_freq(
 		if (i == 0 && min_freq_idx == 9)
 			min_freq_idx = 11;
 		else if (i == 1 && min_freq_idx == 8)
-			min_freq_idx = 10;
+			min_freq_idx = 12;
 		else if (min_freq_idx != -1 && min_freq_idx < 8)
 			min_freq_idx = 8;
 
@@ -212,12 +212,12 @@ static int mt_ppm_userlimit_set_min_freq(struct ppm_user_limit *limit, int min_f
 
 	/*
 	 * Lighten the HAL touch-boost floor: little 1275000 -> 1075000,
-	 * big 1419000 -> 1169000.
+	 * big 1419000 -> 1002000.
 	 */
 	if (id == 0 && idx == 9)
 		idx = 11;
 	else if (id == 1 && idx == 8)
-		idx = 10;
+		idx = 12;
 	/* Launch floor: little 2000000 -> 1375000, big 2050000 -> 1419000 */
 	else if (id == 0 && idx >= 0 && idx < 8)
 		idx = 8;
