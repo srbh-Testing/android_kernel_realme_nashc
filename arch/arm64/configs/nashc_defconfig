@@ -481,9 +481,13 @@ CONFIG_TRIM_UNUSED_KSYMS=y
 CONFIG_UNUSED_KSYMS_WHITELIST="android/ksysm_whitelist"
 
 # Misc
-CONFIG_ANDROID_SIMPLE_LMK=y
-CONFIG_ANDROID_SIMPLE_LMK_MINFREE=226
-CONFIG_ANDROID_SIMPLE_LMK_TIMEOUT_MSEC=150
+# ANDROID_SIMPLE_LMK removed: drivers/android/Kconfig declares it
+# "depends on ... && !PSI", and CONFIG_PSI=y is now set above (for
+# lmkd's pressure-based memory management) -- so these three lines were
+# already being silently dropped by Kconfig dependency resolution at
+# build time (make olddefconfig), never actually compiled in. Removing
+# them only so the defconfig stops claiming Simple LMK is active when
+# it never has been since PSI was turned on; no functional change.
 CONFIG_MTK_CAMERA_ISP_OWE_SUPPORT=y
 CONFIG_LOCALVERSION="-100RBH-Perf"
 # CONFIG_LOCALVERSION_AUTO is not set
